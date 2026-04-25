@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="manifest" href="manifest.json">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Secure QR Scanner</title>
@@ -68,8 +67,25 @@
         }
 
         // Initialize Scanner
-        let scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
-        scanner.render((text) => verifyTicketJS(text), (err) => {});
+        const html5QrCode = new Html5Qrcode("reader");
+
+        const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+            // Call your verification function
+            verifyTicketJS(decodedText);
+        };
+
+        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+        // This starts the camera automatically using the back camera
+        html5QrCode.start(
+            { facingMode: "environment" }, // Forces back camera
+            config, 
+            qrCodeSuccessCallback
+        ).catch((err) => {
+            console.error("Unable to start scanning.", err);
+            // Fallback: If "environment" fails, try any available camera
+            html5QrCode.start({ facingMode: "user" }, config, qrCodeSuccessCallback);
+});
     </script>
 </body>
 </html>
